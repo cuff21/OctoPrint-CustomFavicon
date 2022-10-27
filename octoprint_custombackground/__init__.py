@@ -6,30 +6,30 @@ import octoprint.filemanager
 import octoprint.filemanager.util
 import datetime
 
-class custombackground(octoprint.plugin.AssetPlugin,
+class customfavicon(octoprint.plugin.AssetPlugin,
 				octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.SettingsPlugin):
 	
 	##-- AssetPlugin mixin
 	def get_assets(self):
-		return dict(js=["js/custombackground.js"])
+		return dict(js=["js/customfavicon.js"])
 
 	##-- Settings mixin
 	def get_settings_defaults(self):
-		return dict(background_url="/static/img/graph-background.png", icon_url="/static/img/tentacle-20x20.png", fillMethod="cover", position="center center", uploaded_url="", axes_text_color="", tick_color="", temp_line_colors="")
+		return dict(favicon_url="/static/img/apple-touch-icon-114x114.png", icon_url="/static/img/tentacle-20x20.png", uploaded_url="")
 
 	def get_settings_version(self):
 		return 1
 		
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 1:
-			migration_url = self._settings.get(["background_url"])
+			migration_url = self._settings.get(["favicon_url"])
 			self._logger.info(migration_url)
-			if migration_url.startswith("/plugin/custombackground/uploaded"):
-				new_background_url = migration_url.replace("/plugin/custombackground/uploaded", "/plugin/custombackground/custom/uploaded")
-				self._logger.info(new_background_url)
-				self._settings.set(["background_url"], new_background_url)
-				self._settings.set(["uploaded_url"], new_background_url)
+			if migration_url.startswith("/plugin/customfavicon/uploaded"):
+				new_favicon_url = migration_url.replace("/plugin/custombfavicon/uploaded", "/plugin/customfavicon/custom/uploaded")
+				self._logger.info(new_favicon_url)
+				self._settings.set(["favicon_url"], new_favicon_url)
+				self._settings.set(["uploaded_url"], new_favicon_url)
 
 	##-- Template mixin
 	def get_template_configs(self):
@@ -39,31 +39,31 @@ class custombackground(octoprint.plugin.AssetPlugin,
 	def get_extension_tree(self, *args, **kwargs):
 		return dict(
 			machinecode=dict(
-				custombackground=["jpg", "bmp", "png", "gif", "jpeg", "webp", "JPG", "BMP", "PNG", "GIF", "JPEG", "WEBP"]
+				customfavicon=["png", "PNG"]
 			)
 		)
 	
 	##~~ Image upload preprocessor hook	
-	def custombackgroundupload(self, path, file_object, links=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
+	def customfaviconupload(self, path, file_object, links=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
 		img_extension_tree = self.get_extension_tree()
-		img_extensions = img_extension_tree.get("machinecode").get("custombackground")
+		img_extensions = img_extension_tree.get("machinecode").get("customfavicon")
 		name, extension = os.path.splitext(file_object.filename)
 		if name == "icon":
 			self._logger.info("Setting icon url for " + path)
 			#file_object.save(self.get_plugin_data_folder() + "/uploaded" + extension)
 			octoprint.filemanager.util.StreamWrapper(self.get_plugin_data_folder() + "/icon" + extension, file_object.stream()).save(self.get_plugin_data_folder() + "/icon" + extension)
 			self._logger.info(self.get_plugin_data_folder() + "/icon" + extension)
-			self._settings.set(["icon_url"], "/plugin/custombackground/custom/icon{}?{:%Y%m%d%H%M%S}".format(extension, datetime.datetime.now()))
+			self._settings.set(["icon_url"], "/plugin/customfavicon/custom/icon{}?{:%Y%m%d%H%M%S}".format(extension, datetime.datetime.now()))
 			self._settings.save()
 			self._plugin_manager.send_plugin_message(self._identifier, dict(type="reload"))
 			return file_object
 		if extension.replace(".", "") in img_extensions:
-			self._logger.info("Setting background url for " + path)
+			self._logger.info("Setting favicon url for " + path)
 			# file_object.save(self.get_plugin_data_folder() + "/uploaded" + extension)
 			octoprint.filemanager.util.StreamWrapper(self.get_plugin_data_folder() + "/uploaded" + extension, file_object.stream()).save(self.get_plugin_data_folder() + "/uploaded" + extension)
 			self._logger.info(self.get_plugin_data_folder() + "/uploaded" + extension)
-			self._settings.set(["background_url"], "/plugin/custombackground/custom/uploaded{}?{:%Y%m%d%H%M%S}".format(extension, datetime.datetime.now()))
-			self._settings.set(["uploaded_url"], "/plugin/custombackground/custom/uploaded{}?{:%Y%m%d%H%M%S}".format(extension, datetime.datetime.now()))
+			self._settings.set(["favicon_url"], "/plugin/customfavicon/custom/uploaded{}?{:%Y%m%d%H%M%S}".format(extension, datetime.datetime.now()))
+			self._settings.set(["uploaded_url"], "/plugin/customfavicon/custom/uploaded{}?{:%Y%m%d%H%M%S}".format(extension, datetime.datetime.now()))
 			self._settings.save()
 			self._plugin_manager.send_plugin_message(self._identifier, dict(type="reload"))
 		return file_object
@@ -84,14 +84,14 @@ class custombackground(octoprint.plugin.AssetPlugin,
 		
 	def get_update_information(self):
 		return dict(
-			custombackground=dict(
-				displayName="Custom Background",
+			customfavicon=dict(
+				displayName="Custom Favicon",
 				displayVersion=self._plugin_version,
 
 				# version check: github repository
 				type="github_release",
-				user="jneilliii",
-				repo="OctoPrint-CustomBackground",
+				user="cuff21",
+				repo="OctoPrint-CustomFavicon",
 				current=self._plugin_version,
 				stable_branch=dict(
 					name="Stable", branch="master", comittish=["master"]
@@ -105,21 +105,21 @@ class custombackground(octoprint.plugin.AssetPlugin,
 				],
 
 				# update method: pip
-				pip="https://github.com/jneilliii/OctoPrint-CustomBackground/archive/{target_version}.zip"
+				pip="https://github.com/cuff21/OctoPrint-CustomFavicon/archive/{target_version}.zip"
 			)
 		)
 
-__plugin_name__ = "Custom Background"
+__plugin_name__ = "Custom Favicon"
 __plugin_pythoncompat__ = ">=2.7,<4"
 
 def __plugin_load__():
 	global __plugin_implementation__
-	__plugin_implementation__ = custombackground()
+	__plugin_implementation__ = customfavicon()
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
 		"octoprint.filemanager.extension_tree": __plugin_implementation__.get_extension_tree,
-		"octoprint.filemanager.preprocessor": __plugin_implementation__.custombackgroundupload,
+		"octoprint.filemanager.preprocessor": __plugin_implementation__.customfaviconupload,
 		"octoprint.server.http.routes": __plugin_implementation__.route_hook
 	}
